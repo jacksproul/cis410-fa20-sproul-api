@@ -2,10 +2,10 @@ const sql = require('mssql')
 const sproulConfig = require('./config.js')
 
 const config = {
-    user: sproulConfig.config.DB.user,
-    password: sproulConfig.config.DB.password,
-    server: sproulConfig.config.DB.server, // You can use 'localhost\\instance' to connect to named instance
-    database: sproulConfig.config.DB.database,
+    user: sproulConfig.DB.user,
+    password: sproulConfig.DB.password,
+    server: sproulConfig.DB.server, // You can use 'localhost\\instance' to connect to named instance
+    database: sproulConfig.DB.database,
 }
 
 async function executeQuery(aQuery){
