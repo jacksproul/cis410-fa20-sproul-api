@@ -1,12 +1,80 @@
 const express = require('express')
 const bcrypt = require('bcryptjs')
 const db = require('./dbConnectExec.js')
+const jwt = require('jsonwebtoken')
+const config = require('./config.js')
 
 const app = express();
 app.use(express.json())
 
 app.get("/hi",(req,res)=>{
     res.send("hello world")
+})
+
+app.post("/player/login", async(req,res)=>{
+    //console.log(req.body)
+
+    var email = req.body.email;
+    var password = req.body.password;
+
+    if (!email || !password){
+        return res.status(400).send('bad request')
+    }
+
+    //check that user email exists in db
+    var query = `SELECT *
+    FROM Player
+    WHERE Email = '${email}'`
+
+    let result;
+
+    try{
+        result = await db.executeQuery(query);
+    }catch(myError){
+        console.log('error in /player/login', myError);
+        return res.status(500).send()
+    }
+
+   // console.log(result);
+
+    if(!result[0]){return res.status(400).send('invalid user credentials')}
+    //check that password matches
+
+    let user = result[0]
+    //console.log(user)
+
+    if(!bcrypt.compareSync(password,user.Password)){
+        console.log("invalid password");
+        return res.status(400).send("invalid user credentials");
+    }
+
+    //generate token
+
+    let token = jwt.sign({pk: user.PlayerPK}, config.JWT, {expiresIn: '60 minutes'})
+
+    //console.log(token)
+    //save token in db and send token and user info back to user
+    let setTokenQuery = `UPDATE Player
+    SET Token = '${token}'
+    WHERE PlayerPK = ${user.PlayerPK}`
+
+    try{
+        await db.executeQuery(setTokenQuery)
+
+        res.status(200).send({
+            token: token,
+            user: {
+                FirstName: user.FirstName,
+                LastName: user.LastName,
+                Email: user.Email,
+                PlayerPK: user.PlayerPK
+            }
+        })
+    }
+    catch(myError){
+        console.log("error setting user token", myError);
+        res.status(500).send()
+    }
 })
 
 app.post("/player", async (req,res)=>{
