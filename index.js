@@ -3,9 +3,11 @@ const bcrypt = require('bcryptjs')
 const db = require('./dbConnectExec.js')
 const jwt = require('jsonwebtoken')
 const config = require('./config.js')
+const cors = require('cors')
 
 const app = express();
 app.use(express.json())
+app.use(cors())
 const auth = require('./middleware/authenticate')
 
 
@@ -189,4 +191,7 @@ app.get("/videogame/:pk", (req,res) =>{
         res.status(500).send()
     })
 } )
-app.listen(5000,()=>{console.log("app is running on port 5000")})
+
+const PORT = process.env.PORT || 5000
+
+app.listen(PORT,()=>{console.log(`app is running on port ${PORT}`)})
