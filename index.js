@@ -6,6 +6,40 @@ const config = require('./config.js')
 
 const app = express();
 app.use(express.json())
+const auth = require('./middleware/authenticate')
+
+
+app.post("/reviews", auth, async(req,res)=>{
+
+    try{
+        var gameFK = req.body.gameFK;
+        var rating = req.body.rating;
+        var summary = req.body.summary;
+    
+        if(!gameFK || !rating || !summary){res.status(400).send("bad request")}
+
+        summary = summary.replace("'", "''")
+    
+        //console.log(req.player)
+        //res.send("here is your response")
+
+        let insertQuery = `INSERT INTO Review(Rating, Summary, GameFK)
+        OUTPUT inserted.ReviewPK, inserted.Rating, inserted.Summary, inserted.GameFK
+        VALUES ('${rating}', '${summary}', ${gameFK})`
+
+        let insertedReview = await db.executeQuery(insertQuery)
+        //console.log(insertedReview)
+        res.status(201).send(insertedReview[0])
+    }
+    catch(error){
+        console.log("error in POST/reviews")
+        res.status(500).send()
+    }
+})
+
+app.get('/player/me', auth, (req,res)=>{
+    res.send(req.player)
+})
 
 app.get("/hi",(req,res)=>{
     res.send("hello world")
