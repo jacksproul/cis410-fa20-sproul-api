@@ -10,6 +10,24 @@ app.use(express.json())
 app.use(cors())
 const auth = require('./middleware/authenticate')
 
+app.post('/player/logout', auth, (req,res)=>{
+    var query = `UPDATE Player
+    SET Token = NULL
+    WHERE PlayerPK = ${req.player.PlayerPK}`
+
+    db.executeQuery(query)
+    .then(()=>{res.status(200).send()})
+    .catch((error)=>{
+        console.log("error in POST /player/logout", error)
+        res.status(500).send()
+    })
+})
+
+// app.get('/reviews/me', auth, async(req,res)=>{
+//     let playerPK = req.player.PlayerPK;
+// })
+
+app.get("/", (req,res)=>{res.send("hello world")})
 
 app.post("/reviews", auth, async(req,res)=>{
 
