@@ -23,9 +23,21 @@ app.post('/player/logout', auth, (req,res)=>{
     })
 })
 
-// app.get('/reviews/me', auth, async(req,res)=>{
-//     let playerPK = req.player.PlayerPK;
-// })
+app.get("/reviews/me", auth, (req,res)=>{
+    //get data from database
+    var query = `SELECT *
+    FROM Review
+    WHERE PlayerFK = ${req.player.PlayerPK}`
+
+    db.executeQuery(query)
+    .then((result) => {
+        res.status(200).send(result)
+    })
+    .catch((error) => {
+        console.log("error in GET /reviews/me", error);
+        res.status(500).send()
+    })
+})
 
 app.get("/", (req,res)=>{res.send("hello world")})
 
@@ -35,17 +47,18 @@ app.post("/reviews", auth, async(req,res)=>{
         var gameFK = req.body.gameFK;
         var rating = req.body.rating;
         var summary = req.body.summary;
+        var playerFK = req.player.PlayerPK;
     
-        if(!gameFK || !rating || !summary){res.status(400).send("bad request")}
+        if(!gameFK || !rating || !summary || !playerFK){res.status(400).send("bad request")}
 
         summary = summary.replace("'", "''")
     
         //console.log(req.player)
         //res.send("here is your response")
 
-        let insertQuery = `INSERT INTO Review(Rating, Summary, GameFK)
-        OUTPUT inserted.ReviewPK, inserted.Rating, inserted.Summary, inserted.GameFK
-        VALUES ('${rating}', '${summary}', ${gameFK})`
+        let insertQuery = `INSERT INTO Review(Rating, Summary, GameFK, PlayerFK)
+        OUTPUT inserted.ReviewPK, inserted.Rating, inserted.Summary, inserted.GameFK, inserted.PlayerFK
+        VALUES ('${rating}', '${summary}', ${gameFK}, '${playerFK}')`
 
         let insertedReview = await db.executeQuery(insertQuery)
         //console.log(insertedReview)
