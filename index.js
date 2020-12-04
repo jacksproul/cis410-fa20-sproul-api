@@ -177,7 +177,7 @@ app.post("/player", async (req,res)=>{
     VALUES('${FirstName}','${LastName}','${email}','${hashedPassword}')`
 
     db.executeQuery(insertQuery)
-    .then(()=>{res.status(201).send})
+    .then(()=>{res.status(201).send()})
     .catch(()=>{
         console.log("error in POST /player", err)
         res.status(500).send()
